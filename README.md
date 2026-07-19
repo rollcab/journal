@@ -74,7 +74,23 @@ Each year is stored as `.journal/YYYY.json`:
 
 ## Deploy to GitHub Pages
 
-Push to `main` — the included workflow deploys the `src/` folder automatically. Add your Pages URL as an authorized JavaScript origin in Google Cloud.
+### 1. Enable Pages in GitHub (required once)
+
+The workflow will fail with `Get Pages site failed` until you do this:
+
+1. Open **https://github.com/rollcab/journal/settings/pages**
+2. Under **Build and deployment → Source**, choose **GitHub Actions** (not “Deploy from a branch”)
+3. Save — no branch or folder selection is needed when using Actions
+
+### 2. Push to `main`
+
+The workflow in `.github/workflows/static.yml` deploys the `src/` folder automatically.
+
+Your site will be at: **https://rollcab.github.io/journal/**
+
+Add that URL as an authorized JavaScript origin in Google Cloud (alongside `http://localhost:8080`).
+
+> **Note:** A “Node 20 is being deprecated” message in the Actions log is a harmless runner notice, not the cause of deploy failures.
 
 ## License
 
