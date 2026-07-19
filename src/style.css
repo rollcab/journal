@@ -71,6 +71,9 @@ body {
 .drive-section {
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .drive-status {
@@ -310,6 +313,15 @@ button:hover { opacity: 0.85; }
     width: 100%;
 }
 
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    opacity: 0.5;
+}
+
 .btn-icon {
     background: transparent;
     border: none;
@@ -340,6 +352,13 @@ button:hover { opacity: 0.85; }
 .sync-status.saving { color: var(--warning); }
 .sync-status.saved { color: var(--success); }
 .sync-status.error { color: #d32f2f; }
+
+.save-stats {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+    font-variant-numeric: tabular-nums;
+}
 
 [data-theme="dark"] .sync-status.error { color: #ffb4ab; }
 

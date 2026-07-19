@@ -1,6 +1,7 @@
 const DriveStorage = (() => {
     const SCOPES = 'https://www.googleapis.com/auth/drive.file';
     const DRIVE_API = 'https://www.googleapis.com/drive/v3';
+    const UPLOAD_API = 'https://www.googleapis.com/upload/drive/v3';
 
     let accessToken = null;
     let tokenClient = null;
@@ -134,7 +135,7 @@ const DriveStorage = (() => {
     }
 
     async function uploadFileContent(fileId, content) {
-        const response = await fetch(`${DRIVE_API}/files/${fileId}?uploadType=media`, {
+        const response = await fetch(`${UPLOAD_API}/files/${fileId}?uploadType=media`, {
             method: 'PATCH',
             headers: {
                 Authorization: `Bearer ${accessToken}`,

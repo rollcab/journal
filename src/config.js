@@ -5,5 +5,5 @@ const CONFIG = {
     JOURNAL_FOLDER: '.journal',
     PROMPTS_PER_DAY: 3,
     DATE_RANGE_DAYS: 365,
-    AUTOSAVE_DELAY_MS: 800,
+    AUTOSAVE_DELAY_MS: 2 * 60 * 1000,
 };

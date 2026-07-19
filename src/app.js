@@ -3,6 +3,11 @@ const App = (() => {
     const yearCache = new Map();
     let selectedDate = formatDate(new Date());
     let saveTimer = null;
+    let saveCountdownTimer = null;
+    let saveCountdownEnd = 0;
+    let saveAttemptCount = 0;
+    let hasUnsavedChanges = false;
+    let autoSaveScheduled = false;
     let isSaving = false;
     let pendingSave = false;
 
@@ -89,14 +94,80 @@ const App = (() => {
         );
     }
 
-    function scheduleSave() {
-        clearTimeout(saveTimer);
-        setSyncStatus('Unsaved changes…', 'saving');
-        saveTimer = setTimeout(saveCurrentYear, CONFIG.AUTOSAVE_DELAY_MS);
+    function clearSaveCountdown() {
+        clearInterval(saveCountdownTimer);
+        saveCountdownTimer = null;
     }
 
-    async function saveCurrentYear() {
+    function updateSaveStats(text) {
+        const el = document.getElementById('saveStats');
+        if (!text) {
+            el.classList.add('hidden');
+            el.textContent = '';
+            return;
+        }
+        el.textContent = text;
+        el.classList.remove('hidden');
+    }
+
+    function formatCountdown(ms) {
+        const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        if (minutes > 0) return `${minutes}m ${String(seconds).padStart(2, '0')}s`;
+        return `${seconds}s`;
+    }
+
+    function clearAutoSaveTimer() {
+        clearTimeout(saveTimer);
+        saveTimer = null;
+        clearSaveCountdown();
+        autoSaveScheduled = false;
+    }
+
+    function markDirty() {
+        hasUnsavedChanges = true;
+        setSyncStatus('Unsaved changes…', 'saving');
+        updateSaveButton();
+        scheduleAutoSave();
+    }
+
+    function scheduleAutoSave() {
+        if (autoSaveScheduled || !DriveStorage.isConnected() || !hasUnsavedChanges) return;
+
+        autoSaveScheduled = true;
+        saveCountdownEnd = Date.now() + CONFIG.AUTOSAVE_DELAY_MS;
+        updateSaveStats(`Auto-save in ${formatCountdown(CONFIG.AUTOSAVE_DELAY_MS)} · attempt #${saveAttemptCount + 1}`);
+
+        saveCountdownTimer = setInterval(() => {
+            const remaining = saveCountdownEnd - Date.now();
+            if (remaining <= 0) {
+                clearSaveCountdown();
+                return;
+            }
+            updateSaveStats(`Auto-save in ${formatCountdown(remaining)} · attempt #${saveAttemptCount + 1}`);
+        }, 1000);
+
+        saveTimer = setTimeout(async () => {
+            autoSaveScheduled = false;
+            if (hasUnsavedChanges) await saveCurrentYear(false);
+        }, CONFIG.AUTOSAVE_DELAY_MS);
+    }
+
+    function updateSaveButton() {
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = isSaving || !hasUnsavedChanges;
+    }
+
+    async function saveNow() {
+        if (!DriveStorage.isConnected() || isSaving) return;
+        clearAutoSaveTimer();
+        await saveCurrentYear(true);
+    }
+
+    async function saveCurrentYear(isManual = false) {
         if (!DriveStorage.isConnected()) return;
+        if (!isManual && !hasUnsavedChanges) return;
 
         const year = getYear(selectedDate);
         const yearData = yearCache.get(year);
@@ -107,20 +178,31 @@ const App = (() => {
             return;
         }
 
+        saveAttemptCount++;
         isSaving = true;
-        setSyncStatus('Saving…', 'saving');
+        updateSaveButton();
+        setSyncStatus(isManual ? 'Saving…' : 'Auto-saving…', 'saving');
+        updateSaveStats(`${isManual ? 'Manual' : 'Auto'} save attempt #${saveAttemptCount}`);
+
+        const startedAt = Date.now();
 
         try {
             await DriveStorage.saveYear(year, yearData);
+            const elapsed = ((Date.now() - startedAt) / 1000).toFixed(1);
+            hasUnsavedChanges = false;
             setSyncStatus('Saved to Google Drive', 'saved');
+            updateSaveStats(`Saved on attempt #${saveAttemptCount} · ${elapsed}s`);
             renderDateList();
         } catch (err) {
             setSyncStatus(`Save failed: ${err.message}`, 'error');
+            updateSaveStats(`Failed on attempt #${saveAttemptCount}`);
+            scheduleAutoSave();
         } finally {
             isSaving = false;
+            updateSaveButton();
             if (pendingSave) {
                 pendingSave = false;
-                scheduleSave();
+                await saveCurrentYear(isManual);
             }
         }
     }
@@ -221,7 +303,7 @@ const App = (() => {
         entry.responses[promptId] = { ...entry.responses[promptId], ...data };
         entry.updatedAt = new Date().toISOString();
         setEntryStatus('Edited');
-        scheduleSave();
+        markDirty();
     }
 
     async function selectDate(dateStr) {
@@ -253,11 +335,15 @@ const App = (() => {
         document.getElementById('driveStatus').classList.toggle('hidden', !connected);
         document.getElementById('connectPrompt').classList.toggle('hidden', connected);
         document.getElementById('journalContent').classList.toggle('hidden', !connected);
+        document.getElementById('saveBtn').classList.toggle('hidden', !connected);
 
         if (connected) {
-            setSyncStatus('Connected', 'saved');
+            setSyncStatus(hasUnsavedChanges ? 'Unsaved changes…' : 'Connected', hasUnsavedChanges ? 'saving' : 'saved');
+            updateSaveStats(saveAttemptCount ? `Save attempts this session: ${saveAttemptCount}` : '');
+            updateSaveButton();
         } else {
             setSyncStatus('Not connected');
+            updateSaveStats('');
         }
     }
 
@@ -272,6 +358,10 @@ const App = (() => {
     }
 
     function onDisconnected() {
+        clearAutoSaveTimer();
+        saveAttemptCount = 0;
+        hasUnsavedChanges = false;
+        updateSaveStats('');
         showConnectedUI(false);
         yearCache.clear();
         document.getElementById('promptsSection').innerHTML = '';
@@ -318,13 +408,15 @@ const App = (() => {
             onDisconnected();
         });
 
+        document.getElementById('saveBtn').addEventListener('click', saveNow);
+
         document.getElementById('freeWrite').addEventListener('input', (e) => {
             const entry = ensureEntry(selectedDate);
             if (!entry) return;
             entry.freeWrite = e.target.value;
             entry.updatedAt = new Date().toISOString();
             setEntryStatus('Edited');
-            scheduleSave();
+            markDirty();
         });
     }
 
