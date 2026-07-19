@@ -133,55 +133,41 @@ const DriveStorage = (() => {
         }
     }
 
+    async function uploadFileContent(fileId, content) {
+        const response = await fetch(`${DRIVE_API}/files/${fileId}?uploadType=media`, {
+            method: 'PATCH',
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: content,
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error?.message || 'Failed to update journal file');
+        }
+    }
+
     async function saveYear(year, data) {
-        const folderId = await ensureJournalFolder();
+        await ensureJournalFolder();
         const fileName = yearFileName(year);
         const body = JSON.stringify(data, null, 2);
         const meta = await getYearFileMeta(year);
 
         if (meta) {
-            await fetch(`${DRIVE_API}/files/${meta.id}?uploadType=media`, {
-                method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json',
-                },
-                body,
-            }).then(res => {
-                if (!res.ok) throw new Error('Failed to update journal file');
-            });
+            await uploadFileContent(meta.id, body);
         } else {
-            const metadata = {
-                name: fileName,
-                parents: [folderId],
-                mimeType: 'application/json',
-            };
-
-            const boundary = 'journal_boundary_' + Date.now();
-            const multipartBody =
-                `--${boundary}\r\n` +
-                'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-                JSON.stringify(metadata) + '\r\n' +
-                `--${boundary}\r\n` +
-                'Content-Type: application/json\r\n\r\n' +
-                body + '\r\n' +
-                `--${boundary}--`;
-
-            const created = await fetch(`${DRIVE_API}/files?uploadType=multipart`, {
+            const created = await apiRequest('/files', {
                 method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': `multipart/related; boundary=${boundary}`,
-                },
-                body: multipartBody,
-            }).then(async res => {
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.error?.message || 'Failed to create journal file');
-                }
-                return res.json();
+                body: JSON.stringify({
+                    name: fileName,
+                    parents: [journalFolderId],
+                    mimeType: 'application/json',
+                }),
             });
 
+            await uploadFileContent(created.id, body);
             yearFiles.set(year, { id: created.id, name: fileName });
         }
     }
