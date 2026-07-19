@@ -1,0 +1,361 @@
+:root {
+    --bg-color: #ffffff;
+    --text-color: #121212;
+    --card-bg: #f9f9f9;
+    --border-color: #e0e0e0;
+    --primary-color: #1a1a1a;
+    --primary-text: #ffffff;
+    --sidebar-bg: #f4f4f4;
+    --highlight: #5c6bc0;
+    --highlight-soft: #e8eaf6;
+    --muted: #666666;
+    --success: #2e7d32;
+    --warning: #ed6c02;
+}
+
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --text-color: #ffffff;
+    --card-bg: #1e1e1e;
+    --border-color: #333333;
+    --primary-color: #ffffff;
+    --primary-text: #121212;
+    --sidebar-bg: #181818;
+    --highlight: #9fa8da;
+    --highlight-soft: #1a237e33;
+    --muted: #aaaaaa;
+    --success: #81c784;
+    --warning: #ffb74d;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    transition: background-color 0.3s, color 0.3s;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.app {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    min-width: 260px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-header h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.drive-section {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.drive-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.status-dot {
+    font-size: 0.85rem;
+    color: var(--success);
+}
+
+.sync-status {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.35rem;
+}
+
+.date-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 0;
+}
+
+.date-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.65rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background-color 0.15s;
+}
+
+.date-item:hover {
+    background-color: var(--card-bg);
+}
+
+.date-item.active {
+    background-color: var(--highlight-soft);
+    border-left-color: var(--highlight);
+}
+
+.date-item.has-entry .date-label {
+    font-weight: 600;
+}
+
+.date-label {
+    display: block;
+    font-size: 0.95rem;
+}
+
+.date-day {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.1rem;
+}
+
+.journal-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    max-width: 760px;
+}
+
+.journal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.journal-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.entry-status {
+    font-size: 0.8rem;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.connect-prompt {
+    text-align: center;
+    padding: 2.5rem 2rem;
+}
+
+.connect-prompt h3 {
+    margin-bottom: 0.75rem;
+}
+
+.connect-prompt p {
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.connect-prompt code {
+    background: var(--bg-color);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.prompts-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.prompt-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+}
+
+.prompt-card h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.rating-slider {
+    width: 100%;
+    accent-color: var(--highlight);
+    cursor: pointer;
+}
+
+.rating-value {
+    font-size: 0.85rem;
+    color: var(--highlight);
+    font-weight: 600;
+    text-align: center;
+}
+
+.prompt-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.free-write-section h3 {
+    margin-bottom: 0.25rem;
+}
+
+.free-write-section .sub-text {
+    margin-bottom: 0.75rem;
+}
+
+textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+textarea:focus, .prompt-textarea:focus {
+    outline: none;
+    border-color: var(--highlight);
+}
+
+button {
+    cursor: pointer;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    transition: opacity 0.2s;
+}
+
+button:hover { opacity: 0.85; }
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--primary-text);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn-small {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+}
+
+.btn-full {
+    width: 100%;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    padding: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+.sub-text {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.hidden { display: none !important; }
+
+.sync-status.saving { color: var(--warning); }
+.sync-status.saved { color: var(--success); }
+.sync-status.error { color: #d32f2f; }
+
+[data-theme="dark"] .sync-status.error { color: #ffb4ab; }
+
+@media (max-width: 768px) {
+    .app {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-width: unset;
+        height: auto;
+        max-height: 40vh;
+    }
+
+    .journal-main {
+        padding: 1.25rem;
+    }
+}

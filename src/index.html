@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="Journal">
+    <meta property="og:description" content="A simple brain-dump journal synced to Google Drive.">
+    <title>Journal</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>Journal</h1>
+                <button id="themeToggle" class="btn-icon" aria-label="Toggle theme">
+                    <svg id="sunIcon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </button>
+            </div>
+
+            <div class="drive-section">
+                <button id="connectDriveBtn" class="btn-outline btn-small btn-full">Connect Google Drive</button>
+                <div id="driveStatus" class="drive-status hidden">
+                    <span id="driveStatusText" class="status-dot">Connected</span>
+                    <button id="disconnectDriveBtn" class="btn-link">Disconnect</button>
+                </div>
+                <div id="syncStatus" class="sync-status">Not connected</div>
+            </div>
+
+            <div id="dateList" class="date-list" role="listbox" aria-label="Journal dates"></div>
+        </aside>
+
+        <main class="journal-main">
+            <header class="journal-header">
+                <div>
+                    <h2 id="selectedDate">—</h2>
+                    <p id="selectedDay" class="sub-text"></p>
+                </div>
+                <span id="entryStatus" class="entry-status"></span>
+            </header>
+
+            <div id="connectPrompt" class="connect-prompt card">
+                <h3>Connect to get started</h3>
+                <p>Link your Google Drive to save journal entries automatically. Data is stored in a <code>.journal</code> folder — one JSON file per year.</p>
+                <button id="connectDriveBtnMain" class="btn-primary">Connect Google Drive</button>
+            </div>
+
+            <div id="journalContent" class="journal-content hidden">
+                <section id="promptsSection" class="prompts-section"></section>
+
+                <section class="card free-write-section">
+                    <h3>Free write</h3>
+                    <p class="sub-text">Brain dump anything else on your mind.</p>
+                    <textarea id="freeWrite" rows="8" placeholder="Write freely..."></textarea>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="prompts.js"></script>
+    <script src="drive.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
