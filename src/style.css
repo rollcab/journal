@@ -79,19 +79,36 @@ body {
 .drive-status {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-top: 0.5rem;
+    align-items: flex-start;
+    gap: 0.75rem;
 }
 
-.status-dot {
-    font-size: 0.85rem;
-    color: var(--success);
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-email {
+    display: block;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sync-status {
     font-size: 0.75rem;
     color: var(--muted);
-    margin-top: 0.35rem;
 }
 
 .date-list {
@@ -138,11 +155,51 @@ body {
     margin-top: 0.1rem;
 }
 
+.content-area {
+    flex: 1;
+    display: flex;
+    min-width: 0;
+    height: 100vh;
+}
+
 .journal-main {
     flex: 1;
     overflow-y: auto;
     padding: 2rem;
-    max-width: 760px;
+    min-width: 0;
+}
+
+.facts-panel {
+    width: 320px;
+    min-width: 280px;
+    padding: 2rem 2rem 2rem 0;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.fact-card {
+    position: sticky;
+    top: 2rem;
+    margin-bottom: 0;
+    border-left: 4px solid var(--highlight);
+}
+
+.fact-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--highlight);
+}
+
+.fact-text {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    margin-bottom: 0.75rem;
+}
+
+.fact-source {
+    font-size: 0.78rem;
+    font-style: italic;
 }
 
 .journal-header {
@@ -362,9 +419,20 @@ button:disabled:hover {
 
 [data-theme="dark"] .sync-status.error { color: #ffb4ab; }
 
+@media (max-width: 1024px) {
+    .facts-panel {
+        display: none;
+    }
+}
+
 @media (max-width: 768px) {
     .app {
         flex-direction: column;
+    }
+
+    .content-area {
+        flex-direction: column;
+        height: auto;
     }
 
     .sidebar {

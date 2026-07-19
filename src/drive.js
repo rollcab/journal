@@ -1,5 +1,11 @@
 const DriveStorage = (() => {
-    const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+    const SCOPES = [
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/userinfo.email',
+    ].join(' ');
+
+    let userProfile = null;
     const DRIVE_API = 'https://www.googleapis.com/drive/v3';
     const UPLOAD_API = 'https://www.googleapis.com/upload/drive/v3';
 
@@ -42,9 +48,55 @@ const DriveStorage = (() => {
 
     function clearToken() {
         localStorage.removeItem('journal_drive_token');
+        localStorage.removeItem('journal_user_profile');
         accessToken = null;
+        userProfile = null;
         journalFolderId = null;
         yearFiles.clear();
+    }
+
+    function storeUserProfile(profile) {
+        userProfile = profile;
+        localStorage.setItem('journal_user_profile', JSON.stringify(profile));
+    }
+
+    function getStoredUserProfile() {
+        try {
+            const raw = localStorage.getItem('journal_user_profile');
+            return raw ? JSON.parse(raw) : null;
+        } catch {
+            return null;
+        }
+    }
+
+    async function fetchUserProfile() {
+        const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch user profile');
+
+        const profile = await response.json();
+        storeUserProfile({
+            name: profile.name || 'User',
+            email: profile.email || '',
+            picture: profile.picture || '',
+        });
+        return userProfile;
+    }
+
+    function getUserProfile() {
+        return userProfile;
+    }
+
+    async function onAuthenticated(onConnect, onError) {
+        try {
+            await fetchUserProfile();
+            await ensureJournalFolder();
+            onConnect?.(userProfile);
+        } catch (err) {
+            onError?.(err.message);
+        }
     }
 
     async function apiRequest(path, options = {}) {
@@ -216,21 +268,16 @@ const DriveStorage = (() => {
                     return;
                 }
                 storeToken(response.access_token, response.expires_in);
-                try {
-                    await ensureJournalFolder();
-                    onConnect?.();
-                } catch (err) {
-                    onError?.(err.message);
-                }
+                await onAuthenticated(onConnect, onError);
             },
         });
 
         const stored = getStoredToken();
         if (stored) {
             accessToken = stored;
+            userProfile = getStoredUserProfile();
             try {
-                await ensureJournalFolder();
-                onConnect?.();
+                await onAuthenticated(onConnect, onError);
                 return true;
             } catch {
                 clearToken();
@@ -258,6 +305,7 @@ const DriveStorage = (() => {
         disconnect,
         isConnected,
         isConfigured,
+        getUserProfile,
         loadYear,
         saveYear,
         createEmptyYearData,

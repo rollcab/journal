@@ -32,7 +32,11 @@ cd src && python3 -m http.server 8080
 6. Add authorized JavaScript origins:
    - `http://localhost:8080` (local dev)
    - Your GitHub Pages URL, e.g. `https://yourusername.github.io`
-7. Copy the Client ID into `src/config.js`:
+7. Under **OAuth consent screen → Scopes**, add:
+   - `.../auth/drive.file`
+   - `.../auth/userinfo.profile`
+   - `.../auth/userinfo.email`
+8. Copy the Client ID into `src/config.js`:
 
 ```js
 const CONFIG = {
@@ -41,7 +45,7 @@ const CONFIG = {
 };
 ```
 
-8. If the app is for personal use, add your Google account as a **Test user** under OAuth consent screen (while in Testing mode).
+9. If the app is for personal use, add your Google account as a **Test user** under OAuth consent screen (while in Testing mode).
 
 ### Connect and write
 

@@ -322,6 +322,18 @@ const App = (() => {
         setEntryStatus(entryHasContent(entry) ? 'Has entries' : '');
 
         renderDateList();
+        renderFactForDate(dateStr);
+    }
+
+    function renderFactForDate(dateStr) {
+        const fact = getFactForDate(dateStr);
+        document.getElementById('factText').textContent = fact.text;
+        document.getElementById('factSource').textContent = fact.source ? `— ${fact.source}` : '';
+    }
+
+    function setUserDisplay(profile) {
+        document.getElementById('userName').textContent = profile?.name || 'User';
+        document.getElementById('userEmail').textContent = profile?.email || '';
     }
 
     function escapeHtml(str) {
@@ -347,7 +359,8 @@ const App = (() => {
         }
     }
 
-    async function onConnected() {
+    async function onConnected(profile) {
+        setUserDisplay(profile || DriveStorage.getUserProfile());
         showConnectedUI(true);
         yearCache.clear();
         const thisYear = new Date().getFullYear();
@@ -362,6 +375,7 @@ const App = (() => {
         saveAttemptCount = 0;
         hasUnsavedChanges = false;
         updateSaveStats('');
+        setUserDisplay(null);
         showConnectedUI(false);
         yearCache.clear();
         document.getElementById('promptsSection').innerHTML = '';
@@ -403,7 +417,7 @@ const App = (() => {
 
         document.getElementById('connectDriveBtn').addEventListener('click', connect);
         document.getElementById('connectDriveBtnMain').addEventListener('click', connect);
-        document.getElementById('disconnectDriveBtn').addEventListener('click', () => {
+        document.getElementById('logoutBtn').addEventListener('click', () => {
             DriveStorage.disconnect();
             onDisconnected();
         });
@@ -426,6 +440,7 @@ const App = (() => {
 
         document.getElementById('selectedDate').textContent = selectedDate;
         document.getElementById('selectedDay').textContent = getDayName(selectedDate);
+        renderFactForDate(selectedDate);
 
         if (!DriveStorage.isConfigured()) {
             showConnectedUI(false);
