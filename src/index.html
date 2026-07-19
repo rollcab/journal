@@ -6,6 +6,7 @@
     <meta property="og:title" content="Journal">
     <meta property="og:description" content="A simple brain-dump journal synced to Google Drive.">
     <title>Journal</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -69,6 +70,22 @@
                     <h3>Did you know?</h3>
                     <p id="factText" class="fact-text">Journaling regularly can improve clarity, mood, and self-awareness — one entry at a time.</p>
                     <p id="factSource" class="fact-source sub-text"></p>
+                </div>
+
+                <div class="card calendar-card">
+                    <div class="calendar-header">
+                        <button id="calendarPrev" class="btn-icon calendar-nav" aria-label="Previous month">‹</button>
+                        <h3 id="calendarTitle">—</h3>
+                        <button id="calendarNext" class="btn-icon calendar-nav" aria-label="Next month">›</button>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                    </div>
+                    <div id="calendarGrid" class="calendar-grid"></div>
+                    <div class="calendar-legend">
+                        <span class="legend-item"><span class="legend-dot journaled"></span> Journaled</span>
+                        <span class="legend-item"><span class="legend-dot selected"></span> Selected</span>
+                    </div>
                 </div>
             </aside>
         </div>

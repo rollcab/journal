@@ -1,7 +1,10 @@
 const App = (() => {
     const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const yearCache = new Map();
     let selectedDate = formatDate(new Date());
+    let calendarViewYear = new Date().getFullYear();
+    let calendarViewMonth = new Date().getMonth();
     let saveTimer = null;
     let saveCountdownTimer = null;
     let saveCountdownEnd = 0;
@@ -193,6 +196,7 @@ const App = (() => {
             setSyncStatus('Saved to Google Drive', 'saved');
             updateSaveStats(`Saved on attempt #${saveAttemptCount} · ${elapsed}s`);
             renderDateList();
+            renderCalendar();
         } catch (err) {
             setSyncStatus(`Save failed: ${err.message}`, 'error');
             updateSaveStats(`Failed on attempt #${saveAttemptCount}`);
@@ -304,10 +308,75 @@ const App = (() => {
         entry.updatedAt = new Date().toISOString();
         setEntryStatus('Edited');
         markDirty();
+        renderCalendar();
+    }
+
+    function syncCalendarToDate(dateStr) {
+        const d = parseDate(dateStr);
+        calendarViewYear = d.getFullYear();
+        calendarViewMonth = d.getMonth();
+    }
+
+    async function renderCalendar() {
+        const grid = document.getElementById('calendarGrid');
+        const title = document.getElementById('calendarTitle');
+        if (!grid || !title) return;
+
+        if (DriveStorage.isConnected()) {
+            await ensureYearLoaded(calendarViewYear);
+        }
+
+        title.textContent = `${MONTH_NAMES[calendarViewMonth]} ${calendarViewYear}`;
+
+        const firstDay = new Date(calendarViewYear, calendarViewMonth, 1);
+        const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
+        const startOffset = firstDay.getDay();
+        const todayStr = formatDate(new Date());
+
+        grid.innerHTML = '';
+
+        for (let i = 0; i < startOffset; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'calendar-day empty';
+            empty.setAttribute('aria-hidden', 'true');
+            grid.appendChild(empty);
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const month = String(calendarViewMonth + 1).padStart(2, '0');
+            const dayStr = String(day).padStart(2, '0');
+            const dateStr = `${calendarViewYear}-${month}-${dayStr}`;
+
+            const btn = document.createElement('button');
+            btn.className = 'calendar-day';
+            btn.type = 'button';
+            btn.textContent = day;
+            btn.title = dateStr;
+
+            if (entryHasContent(getEntry(dateStr))) btn.classList.add('journaled');
+            if (dateStr === selectedDate) btn.classList.add('selected');
+            if (dateStr === todayStr) btn.classList.add('today');
+
+            btn.addEventListener('click', () => selectDate(dateStr));
+            grid.appendChild(btn);
+        }
+    }
+
+    function shiftCalendarMonth(delta) {
+        calendarViewMonth += delta;
+        if (calendarViewMonth > 11) {
+            calendarViewMonth = 0;
+            calendarViewYear++;
+        } else if (calendarViewMonth < 0) {
+            calendarViewMonth = 11;
+            calendarViewYear--;
+        }
+        renderCalendar();
     }
 
     async function selectDate(dateStr) {
         selectedDate = dateStr;
+        syncCalendarToDate(dateStr);
         const year = getYear(dateStr);
         await ensureYearLoaded(year);
 
@@ -323,6 +392,7 @@ const App = (() => {
 
         renderDateList();
         renderFactForDate(dateStr);
+        renderCalendar();
     }
 
     function renderFactForDate(dateStr) {
@@ -424,6 +494,9 @@ const App = (() => {
 
         document.getElementById('saveBtn').addEventListener('click', saveNow);
 
+        document.getElementById('calendarPrev').addEventListener('click', () => shiftCalendarMonth(-1));
+        document.getElementById('calendarNext').addEventListener('click', () => shiftCalendarMonth(1));
+
         document.getElementById('freeWrite').addEventListener('input', (e) => {
             const entry = ensureEntry(selectedDate);
             if (!entry) return;
@@ -431,6 +504,7 @@ const App = (() => {
             entry.updatedAt = new Date().toISOString();
             setEntryStatus('Edited');
             markDirty();
+            renderCalendar();
         });
     }
 
@@ -438,9 +512,11 @@ const App = (() => {
         initTheme();
         bindEvents();
 
+        syncCalendarToDate(selectedDate);
         document.getElementById('selectedDate').textContent = selectedDate;
         document.getElementById('selectedDay').textContent = getDayName(selectedDate);
         renderFactForDate(selectedDate);
+        renderCalendar();
 
         if (!DriveStorage.isConfigured()) {
             showConnectedUI(false);
